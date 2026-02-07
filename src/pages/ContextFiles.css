@@ -1,0 +1,206 @@
+.context-files-page {
+  display: flex;
+  height: 100vh;
+}
+
+.context-sidebar {
+  width: 300px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.context-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.context-header h2 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.context-header p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.files-list {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.file-item {
+  padding: 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.file-item:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--border);
+}
+
+.file-item.active {
+  background: var(--bg-tertiary);
+  border-color: var(--accent);
+}
+
+.file-item.missing {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.file-size {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-family: monospace;
+  margin-bottom: 0.2rem;
+}
+
+.file-name {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.file-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.2rem;
+}
+
+.context-editor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+
+.editor-title h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.editor-title p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.editor-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.editor-actions button {
+  padding: 0.5rem 1rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.editor-actions button:hover {
+  background: var(--bg-primary);
+  border-color: var(--accent);
+}
+
+.editor-actions .save-btn {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.editor-actions .save-btn:hover {
+  opacity: 0.8;
+}
+
+.editor-content {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.content-viewer,
+.content-editor {
+  width: 100%;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.content-viewer {
+  padding: 1rem;
+  white-space: pre-wrap;
+}
+
+.content-editor {
+  min-height: 100%;
+  padding: 1rem;
+  resize: none;
+  outline: none;
+}
+
+.content-editor:focus {
+  border-color: var(--accent);
+}
+
+.markdown-preview {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.5rem;
+  min-height: 100%;
+}
+
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3 {
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.markdown-preview p {
+  color: var(--text-primary);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.markdown-preview code {
+  background: var(--bg-tertiary);
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.85rem;
+}
+
+.markdown-preview pre {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
