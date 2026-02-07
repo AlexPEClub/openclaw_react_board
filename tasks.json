@@ -1,0 +1,145 @@
+{
+  "projects": [
+    {
+      "id": "proj-ed4f0f69",
+      "name": "Minimalisische Journaling App",
+      "description": "Ich möchte eine sehr elegante, moderne und minimalistische Journaling-App erstellen, in der ich tagtäglich einfach ein sehr cleanes Interface habe, um meine Gedanken aufzuschreiben. Die App soll ein sehr helles Design haben.",
+      "docs": "# Minimalisische Journaling App\n\n## Beschreibung\nElegante, minimalistische Journaling-App mit cleaner UI und hellem Design.\n\n## Status\nReady für Agent Pipeline 🚀",
+      "color": "#56031f",
+      "projectPath": "/home/node/clawd/projects/journaling-app",
+      "tasks": [
+        {
+          "id": "PROJ-1",
+          "title": "PROJ-1: User Authentication & Session Management",
+          "description": "Feature specification - Ready for Architecture",
+          "status": "review",
+          "priority": "high",
+          "date": "1.2.2026",
+          "featureFile": "PROJ-1-user-authentication.md",
+          "createdAt": "2026-02-01T11:50:28.646Z"
+        },
+        {
+          "id": "PROJ-2",
+          "title": "PROJ-2: Create Journal Entry",
+          "description": "Feature specification - Ready for Architecture",
+          "status": "review",
+          "priority": "high",
+          "date": "1.2.2026",
+          "featureFile": "PROJ-2-create-journal-entry.md",
+          "createdAt": "2026-02-01T11:50:28.646Z"
+        },
+        {
+          "id": "PROJ-3",
+          "title": "PROJ-3: View & Search Journal Entries",
+          "description": "Feature specification - Ready for Architecture",
+          "status": "review",
+          "priority": "high",
+          "date": "1.2.2026",
+          "featureFile": "PROJ-3-view-and-search-entries.md",
+          "createdAt": "2026-02-01T11:50:28.647Z"
+        },
+        {
+          "id": "PROJ-4",
+          "title": "PROJ-4: Edit & Delete Journal Entries",
+          "description": "Feature specification - Ready for Architecture",
+          "status": "review",
+          "priority": "high",
+          "date": "1.2.2026",
+          "featureFile": "PROJ-4-edit-and-delete-entries.md",
+          "createdAt": "2026-02-01T11:50:28.647Z"
+        }
+      ],
+      "createdAt": "2026-01-31T16:53:39.107Z"
+    },
+    {
+      "id": "proj-8048ada1",
+      "name": "Linktree mit Stripe Anbindung",
+      "description": "Ich möchte bitte ein Linktree ähnliches Software as a Service erstellen mit einer Stripe Anbindung. Die App ist gedacht für Content Creator, die sozusagen ein Linktree Bio erstellen können und dort auch direkt digitale Produkte verkaufen können.",
+      "docs": "# Linktree mit Stripe Anbindung\n\n## Beschreibung\nLinktree-ähnliche SaaS mit Stripe-Integration für Content Creator.\n\n## Zielgruppe\nContent Creator & Digital Product Seller\n\n## Status\nReady für Agent Pipeline 🚀",
+      "color": "#e59a1c",
+      "projectPath": "/home/node/clawd/projects/linktree-stripe",
+      "tasks": [
+        {
+          "id": "PROJ-1",
+          "title": "PROJ-1: User Authentication",
+          "description": "Feature specification - Ready for Architecture",
+          "status": "todo",
+          "priority": "high",
+          "date": "2.2.2026",
+          "featureFile": "PROJ-1-user-authentication.md",
+          "createdAt": "2026-02-02T13:21:42.912Z"
+        },
+        {
+          "id": "PROJ-2",
+          "title": "PROJ-2: Profile Setup",
+          "description": "Feature specification - Ready for Architecture",
+          "status": "todo",
+          "priority": "high",
+          "date": "2.2.2026",
+          "featureFile": "PROJ-2-profile-setup.md",
+          "createdAt": "2026-02-02T13:21:42.923Z"
+        },
+        {
+          "id": "PROJ-3",
+          "title": "PROJ-3: Link Management",
+          "description": "Feature specification - Ready for Architecture",
+          "status": "todo",
+          "priority": "high",
+          "date": "2.2.2026",
+          "featureFile": "PROJ-3-link-management.md",
+          "createdAt": "2026-02-02T13:21:42.933Z"
+        },
+        {
+          "id": "PROJ-4",
+          "title": "PROJ-4: Public Profile",
+          "description": "Feature specification - Ready for Architecture",
+          "status": "todo",
+          "priority": "high",
+          "date": "2.2.2026",
+          "featureFile": "PROJ-4-public-profile.md",
+          "createdAt": "2026-02-02T13:21:42.942Z"
+        },
+        {
+          "id": "PROJ-5",
+          "title": "PROJ-5: Link Analytics",
+          "description": "Feature specification - Ready for Architecture",
+          "status": "todo",
+          "priority": "medium",
+          "date": "2.2.2026",
+          "featureFile": "PROJ-5-link-analytics.md",
+          "createdAt": "2026-02-02T13:21:42.950Z"
+        },
+        {
+          "id": "PROJ-6",
+          "title": "PROJ-6: Theme Customization",
+          "description": "Feature specification - Ready for Architecture",
+          "status": "todo",
+          "priority": "medium",
+          "date": "2.2.2026",
+          "featureFile": "PROJ-6-theme-customization.md",
+          "createdAt": "2026-02-02T13:21:42.958Z"
+        },
+        {
+          "id": "PROJ-7",
+          "title": "PROJ-7: Stripe Subscription",
+          "description": "Feature specification - Ready for Architecture",
+          "status": "todo",
+          "priority": "medium",
+          "date": "2.2.2026",
+          "featureFile": "PROJ-7-stripe-subscription.md",
+          "createdAt": "2026-02-02T13:21:42.965Z"
+        }
+      ],
+      "createdAt": "2026-01-31T16:54:42.906Z"
+    },
+    {
+      "id": "proj-6be4af0d",
+      "name": "Landing Page (AI Coding Starter Kit)",
+      "description": "Simple Landing Page für den Lead Magnet AI Coding Starter Kit.",
+      "docs": "# Landing Page (AI Coding Starter Kit)",
+      "color": "#b93c4",
+      "tasks": [],
+      "createdAt": "2026-02-02T13:24:44.671Z"
+    }
+  ]
+}

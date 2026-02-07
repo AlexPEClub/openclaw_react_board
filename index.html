@@ -1,12 +1,2237 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Molt's Kanban - React</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Molt's Projects 🦞</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- CodeMirror for Code Editor -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/yaml/yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/shell/shell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/jsx/jsx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border: #30363d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --accent: #58a6ff;
+            --success: #3fb950;
+            --danger: #f85149;
+            --warning: #d29922;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem 1rem;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .projects-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .project-item {
+            padding: 0.75rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+            background: transparent;
+        }
+
+        .project-item:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--border);
+        }
+
+        .project-item.active {
+            background: var(--bg-tertiary);
+            border-color: var(--accent);
+            box-shadow: inset 0 0 0 1px var(--accent);
+        }
+
+        .project-id {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            font-family: 'Courier New', monospace;
+            margin-bottom: 0.2rem;
+        }
+
+        .project-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .add-project-btn {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: all 0.15s ease;
+            margin-top: 1rem;
+        }
+
+        .add-project-btn:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Agent Status Indicator */
+        .agent-status {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.75rem 0.8rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+        }
+
+        .agent-status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .agent-status-dot.available {
+            background: var(--success);
+            box-shadow: 0 0 6px var(--success);
+        }
+
+        .agent-status-dot.busy {
+            background: var(--warning);
+            box-shadow: 0 0 6px var(--warning);
+        }
+
+        .agent-status-text {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        /* Navigation Menu */
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.6rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: var(--bg-tertiary);
+            color: var(--accent);
+        }
+
+        .nav-icon {
+            font-size: 1rem;
+        }
+
+        .nav-submenu {
+            display: none;
+            padding-left: 1.2rem;
+            margin: 0.5rem 0;
+            border-left: 1px solid var(--border);
+            margin-left: 1rem;
+        }
+
+        .nav-submenu.visible {
+            display: block;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            margin-left: 260px;
+        }
+
+        .board-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .docs-section {
+            width: 320px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            padding: 1.5rem;
+            overflow-y: auto;
+            max-height: 100vh;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        .docs-header {
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .docs-content {
+            color: var(--text-secondary);
+        }
+
+        .docs-content h1, .docs-content h2, .docs-content h3 {
+            margin-top: 0.8rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .docs-content h1 {
+            font-size: 1rem;
+        }
+
+        .docs-content h2 {
+            font-size: 0.95rem;
+        }
+
+        .docs-content h3 {
+            font-size: 0.9rem;
+        }
+
+        .docs-content p {
+            margin-bottom: 0.5rem;
+        }
+
+        .docs-content ul, .docs-content ol {
+            margin-left: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .docs-content code {
+            background: var(--bg-tertiary);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: var(--accent);
+        }
+
+        /* Board Header */
+        .board-header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .board-header-info h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .board-header-info p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.available {
+            background: var(--success);
+        }
+
+        .status-dot.busy {
+            background: var(--warning);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Board */
+        .board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            min-height: 600px;
+            flex: 1;
+            width: 100%;
+        }
+
+        .column {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .column-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .column-icon {
+            font-size: 1.2rem;
+        }
+
+        .column-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .task-count {
+            margin-left: auto;
+            background: var(--bg-tertiary);
+            padding: 0.25rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .tasks-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            flex: 1;
+        }
+
+        .task {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.75rem;
+            cursor: grab;
+            transition: all 0.15s ease;
+        }
+
+        .task:hover {
+            border-color: var(--accent);
+            background: var(--bg-primary);
+        }
+
+        .task-title {
+            font-weight: 500;
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .task-description {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+            line-height: 1.4;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            font-size: 0.7rem;
+        }
+
+        .task-priority {
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-weight: 500;
+            background: var(--bg-secondary);
+        }
+
+        .priority-high {
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .priority-medium {
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .priority-low {
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 2rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .add-task-input {
+            margin-top: auto;
+            padding-top: 0.8rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .add-task-input input {
+            width: 100%;
+            padding: 0.6rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            font-family: inherit;
+            transition: all 0.15s ease;
+        }
+
+        .add-task-input input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+        }
+
+        .add-task-input input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+        }
+
+        .modal-header {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.5rem;
+            padding: 0.5rem;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            margin-bottom: 0.4rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.6rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            transition: all 0.15s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.7rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.15s ease;
+        }
+
+        .btn:hover {
+            background: #1f6feb;
+        }
+
+        .btn:active {
+            background: #388bfd;
+        }
+
+        /* Dashboard Styles */
+        .dashboard-section {
+            padding: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .dashboard-header {
+            margin-bottom: 2rem;
+        }
+        
+        .dashboard-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .dashboard-header p {
+            color: var(--text-secondary);
+        }
+        
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .dashboard-activity {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        
+        .dashboard-activity h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .activity-log {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .activity-item {
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .activity-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.3rem;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: var(--text-primary);
+        }
+
+        .activity-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+        }
+
+        .activity-badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            background: var(--bg-tertiary);
+        }
+
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .todo-item {
+            padding: 0.6rem;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            border-left: 2px solid transparent;
+            font-size: 0.85rem;
+        }
+
+        .todo-item.completed {
+            opacity: 0.6;
+            border-left-color: var(--success);
+        }
+
+        .todo-item.pending {
+            border-left-color: var(--warning);
+        }
+
+        @media (max-width: 1200px) {
+            .docs-section {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+        }
+
+        /* Project Sub-Navigation */
+        .project-subnav {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+            background: var(--bg-secondary);
+            border-radius: 6px 6px 0 0;
+            padding: 0 1rem;
+        }
+
+        .subnav-tab {
+            padding: 0.75rem 1.25rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.9rem;
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .subnav-tab:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .subnav-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        /* File Browser */
+        .file-browser-container {
+            display: none;
+            flex: 1;
+            height: calc(100vh - 180px);
+        }
+
+        .file-browser-container.active {
+            display: flex;
+        }
+
+        .file-tree-panel {
+            width: 280px;
+            min-width: 280px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow-y: auto;
+            margin-right: 1rem;
+        }
+
+        .file-tree-header {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            z-index: 1;
+        }
+
+        .file-tree {
+            padding: 0.5rem;
+        }
+
+        .file-tree-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.6rem;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            transition: all 0.1s ease;
+        }
+
+        .file-tree-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .file-tree-item.active {
+            background: var(--bg-tertiary);
+            color: var(--accent);
+        }
+
+        .file-tree-item.directory {
+            font-weight: 500;
+        }
+
+        .file-tree-item .icon {
+            font-size: 0.9rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .file-tree-item .name {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-tree-item .chevron {
+            width: 16px;
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            transition: transform 0.15s ease;
+        }
+
+        .file-tree-item.expanded .chevron {
+            transform: rotate(90deg);
+        }
+
+        .file-tree-children {
+            display: none;
+            padding-left: 1rem;
+        }
+
+        .file-tree-children.expanded {
+            display: block;
+        }
+
+        /* Code Editor Panel */
+        .code-editor-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-tertiary);
+        }
+
+        .editor-file-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 0;
+        }
+
+        .editor-file-icon {
+            font-size: 1.1rem;
+        }
+
+        .editor-file-path {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .editor-file-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .editor-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .editor-btn {
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .editor-btn-save {
+            background: var(--accent);
+            border: none;
+            color: white;
+        }
+
+        .editor-btn-save:hover {
+            background: #1f6feb;
+        }
+
+        .editor-btn-save:disabled {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            cursor: not-allowed;
+        }
+
+        .editor-btn-save.saved {
+            background: var(--success);
+            color: #000;
+        }
+
+        .editor-content {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .editor-content .CodeMirror {
+            height: 100%;
+            font-size: 0.9rem;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+        }
+
+        .editor-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .editor-empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .editor-empty-text {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .editor-empty-hint {
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+
+        /* Context Tab */
+        .context-tab-container {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .context-tab-container.active {
+            display: flex;
+        }
+
+        .context-content-wrapper {
+            flex: 1;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        /* No Project Path Message */
+        .no-path-message {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 2rem;
+        }
+
+        .no-path-message .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .no-path-message .title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .no-path-message .desc {
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .set-path-btn {
+            padding: 0.6rem 1.2rem;
+            background: var(--accent);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .set-path-btn:hover {
+            background: #1f6feb;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+    </style>
 </head>
 <body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.jsx"></script>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">🦞 Molty</div>
+        
+        <!-- Navigation Menu -->
+        <div class="nav-menu">
+            <!-- Dashboard Menu Item -->
+            <div class="nav-item active" data-tab="dashboard" onclick="switchTab('dashboard')">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">Dashboard</span>
+            </div>
+            
+            <!-- Projects Menu Item -->
+            <div class="nav-item" data-tab="projects" onclick="switchTab('projects')">
+                <span class="nav-icon">📁</span>
+                <span class="nav-label">Projekte</span>
+            </div>
+            
+            <!-- Projects Submenu (indented) -->
+            <div id="projectsSubmenu" class="nav-submenu">
+                <div class="projects-list" id="projectsList"></div>
+                <button class="add-project-btn" onclick="openProjectModal()">+ Neues Projekt</button>
+            </div>
+            
+            <!-- Status Menu Item -->
+            <div class="nav-item" data-tab="status" onclick="switchTab('status')">
+                <span class="nav-icon">📜</span>
+                <span class="nav-label">Aktivitäten</span>
+            </div>
+            
+            <!-- Context Files Menu Item -->
+            <div class="nav-item" data-tab="context" onclick="switchTab('context')">
+                <span class="nav-icon">🧠</span>
+                <span class="nav-label">Context-Speicher</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Dashboard Section -->
+        <div class="dashboard-section" id="dashboardSection">
+            <div class="dashboard-header">
+                <h1>🏠 Dashboard</h1>
+                <p>Willkommen zurück!</p>
+            </div>
+            
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="dashboardProjectCount">0</div>
+                    <div class="stat-label">Projekte</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="dashboardTaskCount">0</div>
+                    <div class="stat-label">Tasks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="dashboardDoneCount">0</div>
+                    <div class="stat-label">Erledigt</div>
+                </div>
+            </div>
+            
+            <div class="dashboard-activity">
+                <h2>📜 Letzte Aktivitäten</h2>
+                <div id="dashboardActivityList" class="activity-log" style="max-height: 500px; overflow-y: auto;"></div>
+            </div>
+        </div>
+        
+        <!-- Project Detail Section -->
+        <div class="board-section" id="boardSection" style="display: none;">
+            <!-- Project Header -->
+            <div class="board-header">
+                <div class="board-header-info">
+                    <h1 id="projectTitle">Projekt auswählen</h1>
+                    <p id="projectDesc"></p>
+                </div>
+            </div>
+
+            <!-- Sub-Navigation Tabs -->
+            <div class="project-subnav" id="projectSubnav">
+                <div class="subnav-tab active" data-tab="board" onclick="switchProjectTab('board')">
+                    <span>📋</span> Board
+                </div>
+                <div class="subnav-tab" data-tab="files" onclick="switchProjectTab('files')">
+                    <span>📁</span> Files
+                </div>
+                <div class="subnav-tab" data-tab="context" onclick="switchProjectTab('context')">
+                    <span>📚</span> Context
+                </div>
+            </div>
+
+            <!-- Board Tab -->
+            <div class="board" id="board"></div>
+
+            <!-- Files Tab -->
+            <div class="file-browser-container" id="fileBrowserContainer">
+                <div class="file-tree-panel" id="fileTreePanel">
+                    <div class="file-tree-header">
+                        <span>📂</span> Dateien
+                    </div>
+                    <div class="file-tree" id="fileTree">
+                        <div class="editor-empty">
+                            <div class="editor-empty-text">Lade Dateibaum...</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="code-editor-panel" id="codeEditorPanel">
+                    <div class="editor-header" id="editorHeader" style="display: none;">
+                        <div class="editor-file-info">
+                            <span class="editor-file-icon" id="editorFileIcon">📄</span>
+                            <div>
+                                <div class="editor-file-name" id="editorFileName">file.js</div>
+                                <div class="editor-file-path" id="editorFilePath">src/components/</div>
+                            </div>
+                        </div>
+                        <div class="editor-actions">
+                            <button class="editor-btn editor-btn-save" id="editorSaveBtn" onclick="saveCurrentFile()" disabled>
+                                Speichern
+                            </button>
+                        </div>
+                    </div>
+                    <div class="editor-content" id="editorContent">
+                        <div class="editor-empty" id="editorEmpty">
+                            <div class="editor-empty-icon">📝</div>
+                            <div class="editor-empty-text">Datei auswählen</div>
+                            <div class="editor-empty-hint">Klicke auf eine Datei im Baum links</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Context Tab -->
+            <div class="context-tab-container" id="contextTabContainer">
+                <div class="context-content-wrapper">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div class="docs-header" style="margin: 0;">📚 Projekt Kontext</div>
+                        <button onclick="openDocsModal()" style="background: none; border: 1px solid var(--border); color: var(--text-secondary); padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; transition: all 0.15s ease;" onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-secondary)'">Bearbeiten</button>
+                    </div>
+                    <div class="docs-content" id="docsContent">
+                        <p>Projekt auswählen um Dokumentation zu sehen</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Docs Modal -->
+    <div class="modal" id="docsModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeDocsModal()">✕</button>
+            <div class="modal-header">Kontext bearbeiten</div>
+            <div class="form-group">
+                <label>Markdown Inhalt</label>
+                <textarea id="docsInput" style="min-height: 300px;"></textarea>
+            </div>
+            <button class="btn" onclick="saveDocs()">Speichern</button>
+        </div>
+    </div>
+
+    <!-- Project Modal -->
+    <div class="modal" id="projectModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeProjectModal()">✕</button>
+            <div class="modal-header">Neues Projekt</div>
+            <div class="form-group">
+                <label>Projektname</label>
+                <input type="text" id="projectNameInput" placeholder="z.B. Mobile App">
+            </div>
+            <div class="form-group">
+                <label>Beschreibung</label>
+                <textarea id="projectDescInput" placeholder="Kurze Beschreibung..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Dokumentation</label>
+                <textarea id="projectDocsInput" placeholder="# Projekt&#10;&#10;Dokumentation hinzufügen..." style="min-height: 150px;"></textarea>
+            </div>
+            <button class="btn" onclick="createProject()">Erstellen</button>
+        </div>
+    </div>
+
+    <!-- Task Detail Modal -->
+    <div class="modal" id="taskModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <button class="modal-close" onclick="closeTaskModal()">✕</button>
+            <div class="modal-header" id="taskModalTitle">Feature Details</div>
+            <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <label>Inhalt (Markdown)</label>
+                    <button onclick="toggleTaskPreview()" style="background: none; border: 1px solid var(--border); color: var(--text-secondary); padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem;" id="previewToggle">Vorschau</button>
+                </div>
+                <textarea id="taskContentInput" style="min-height: 400px; font-family: 'Courier New', monospace; font-size: 0.85rem;"></textarea>
+                <div id="taskContentPreview" class="docs-content" style="display: none; min-height: 400px; max-height: 500px; overflow-y: auto; padding: 1rem; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px;"></div>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <button class="btn" onclick="saveTaskContent()" style="flex: 1;">Speichern</button>
+                <button class="btn" onclick="closeTaskModal()" style="flex: 0; background: var(--bg-tertiary); border: 1px solid var(--border);">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status View (Activity Log) -->
+    <div id="statusView" style="display: none; flex-direction: column; padding: 2rem; overflow-y: auto; width: 100%; justify-content: flex-start; align-items: center; margin-left: 260px;">
+        <div style="margin-bottom: 2rem; width: 100%; max-width: 800px; text-align: center;">
+            <h1 style="font-size: 1.8rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">📜 Aktivitäten</h1>
+            <p style="color: var(--text-secondary);">Alle Entwicklungstätigkeiten von Molt</p>
+        </div>
+
+        <div id="activityList" class="activity-log" style="width: 100%; max-width: 800px;">
+            <p style="color: var(--text-secondary);">Loading...</p>
+        </div>
+    </div>
+
+    <!-- Context Files View -->
+    <div id="contextView" style="display: none; width: 100%; height: 100vh; flex: 1; margin-left: 260px;">
+        <div style="display: flex; height: 100%; width: 100%;">
+            <!-- Files List -->
+            <div style="width: 280px; min-width: 280px; background: var(--bg-secondary); border-right: 1px solid var(--border); padding: 1.5rem; overflow-y: auto;">
+                <div style="margin-bottom: 1.5rem;">
+                    <h2 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">🧠 Context-Speicher</h2>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary);">Agent-Konfiguration & Memory</p>
+                </div>
+                <div id="contextFilesList" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+            </div>
+            
+            <!-- Editor -->
+            <div style="flex: 1; display: flex; flex-direction: column; padding: 1.5rem; overflow: hidden; min-width: 0;">
+                <div id="contextEditorHeader" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);">
+                    <div>
+                        <h3 id="contextFileName" style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary);">Datei auswählen</h3>
+                        <p id="contextFileDesc" style="font-size: 0.8rem; color: var(--text-secondary);"></p>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button id="contextPreviewBtn" onclick="toggleContextPreview()" style="background: var(--bg-tertiary); border: 1px solid var(--border); color: var(--text-secondary); padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Vorschau</button>
+                        <button id="contextSaveBtn" onclick="saveContextFile()" style="background: var(--accent); border: none; color: white; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem; display: none;">Speichern</button>
+                    </div>
+                </div>
+                <textarea id="contextEditor" style="flex: 1; width: 100%; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); padding: 1rem; font-family: 'Courier New', monospace; font-size: 0.9rem; resize: none; line-height: 1.6;" placeholder="Datei auswählen..."></textarea>
+                <div id="contextPreview" class="docs-content" style="display: none; flex: 1; width: 100%; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; overflow-y: auto;"></div>
+                <div id="contextMeta" style="margin-top: 0.75rem; font-size: 0.75rem; color: var(--text-secondary);"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const columns = [
+            { id: 'todo', title: 'Offen', icon: '📋' },
+            { id: 'in-progress', title: 'In Arbeit', icon: '⚡' },
+            { id: 'review', title: 'Review', icon: '👀' },
+            { id: 'done', title: 'Erledigt', icon: '✅' }
+        ];
+
+        let activeProjectId = localStorage.getItem('lastProjectId') || null;
+
+        async function fetchProjects() {
+            try {
+                const response = await fetch('/api/projects');
+                const data = await response.json();
+                return data.projects || [];
+            } catch (error) {
+                console.error('Error fetching projects:', error);
+                return [];
+            }
+        }
+
+        async function renderProjectsList() {
+            const projects = await fetchProjects();
+            const list = document.getElementById('projectsList');
+            list.innerHTML = projects.map(p => `
+                <div class="project-item ${p.id === activeProjectId ? 'active' : ''}" data-project-id="${p.id}" onclick="selectProject('${p.id}')">
+                    <div class="project-id">${p.id}</div>
+                    <div class="project-name">${p.name}</div>
+                </div>
+            `).join('');
+
+            // Auto-select only on first load (when no project is active yet)
+            if (projects.length > 0 && !document.querySelector('.project-item.active')) {
+                const savedExists = activeProjectId && projects.some(p => p.id === activeProjectId);
+                if (savedExists) {
+                    selectProject(activeProjectId);
+                } else {
+                    selectProject(projects[0].id);
+                }
+            }
+        }
+
+        async function selectProject(projectId) {
+            activeProjectId = projectId;
+            localStorage.setItem('lastProjectId', projectId);
+            
+            // Switch to projects tab if not already there
+            if (document.querySelector('.nav-item[data-tab="projects"]').classList.contains('active') === false) {
+                switchTab('projects');
+            }
+            
+            // Sofort Active-State im DOM setzen (ohne auf fetch zu warten)
+            document.querySelectorAll('.project-item').forEach(item => {
+                const isActive = item.dataset.projectId === projectId;
+                item.classList.toggle('active', isActive);
+            });
+            
+            const projects = await fetchProjects();
+            const project = projects.find(p => p.id === projectId);
+
+            if (project) {
+                document.getElementById('projectTitle').textContent = project.name;
+                document.getElementById('projectDesc').textContent = project.description;
+                document.getElementById('docsContent').innerHTML = marked.parse(project.docs || '# ' + project.name);
+                updateStatusIndicator(project);
+            }
+
+            // Reset file browser state
+            currentFilePath = null;
+            originalFileContent = '';
+            hasUnsavedChanges = false;
+            if (codeEditor) {
+                codeEditor.setValue('');
+            }
+            document.getElementById('editorHeader').style.display = 'none';
+            document.getElementById('editorEmpty').style.display = 'flex';
+            
+            // Load file tree if on files tab
+            if (activeProjectTab === 'files') {
+                loadFileTree();
+            }
+
+            renderProjectsList();
+            renderBoard();
+        }
+
+        function updateStatusIndicator(project) {
+            // Status Indicator wurde entfernt
+        }
+
+        async function renderBoard() {
+            const projects = await fetchProjects();
+            const project = projects.find(p => p.id === activeProjectId);
+
+            if (!project) {
+                document.getElementById('board').innerHTML = '<p style="color: var(--text-secondary);">No project selected</p>';
+                return;
+            }
+
+            updateStatusIndicator(project);
+
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+
+            columns.forEach(column => {
+                const columnTasks = (project.tasks || []).filter(t => t.status === column.id);
+                const columnEl = document.createElement('div');
+                columnEl.className = 'column';
+
+                let tasksHtml = columnTasks.map(task => `
+                    <div class="task" onclick="openTaskModal('${task.id}')" ${task.featureFile ? 'data-feature="true"' : ''}>
+                        <div class="task-title">${task.title}</div>
+                        ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+                        <div class="task-meta">
+                            ${task.priority ? `<span class="task-priority priority-${task.priority}">${task.priority}</span>` : ''}
+                            ${task.featureFile ? `<span style="color: var(--accent);">📄 ${task.featureFile}</span>` : ''}
+                            ${task.date ? `<span>${task.date}</span>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+
+                if (!tasksHtml) {
+                    tasksHtml = '<div class="empty-state">Keine Aufgaben</div>';
+                }
+
+                columnEl.innerHTML = `
+                    <div class="column-header">
+                        <span class="column-icon">${column.icon}</span>
+                        <span class="column-title">${column.title}</span>
+                        <span class="task-count">${columnTasks.length}</span>
+                    </div>
+                    <div class="tasks-list">${tasksHtml}</div>
+                    <div class="add-task-input">
+                        <input type="text" placeholder="Aufgabe hinzufügen..." class="task-input" data-column="${column.id}">
+                    </div>
+                `;
+
+                board.appendChild(columnEl);
+            });
+
+            document.querySelectorAll('.task-input').forEach(input => {
+                input.addEventListener('keypress', async (e) => {
+                    if (e.key === 'Enter' && input.value.trim()) {
+                        await addTask(input.dataset.column, input.value.trim());
+                        input.value = '';
+                    }
+                });
+            });
+        }
+
+        async function addTask(columnId, title) {
+            try {
+                await fetch(`/api/projects/${activeProjectId}/tasks`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title,
+                        status: columnId,
+                        priority: 'medium'
+                    })
+                });
+                renderBoard();
+            } catch (error) {
+                console.error('Error adding task:', error);
+            }
+        }
+
+        async function createProject() {
+            const name = document.getElementById('projectNameInput').value;
+            const description = document.getElementById('projectDescInput').value;
+            const docs = document.getElementById('projectDocsInput').value;
+
+            if (!name.trim()) return alert('Projektname erforderlich');
+
+            try {
+                await fetch('/api/projects', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: name.trim(),
+                        description: description.trim(),
+                        docs: docs.trim()
+                    })
+                });
+                closeProjectModal();
+                renderProjectsList();
+            } catch (error) {
+                console.error('Error creating project:', error);
+            }
+        }
+
+        function openProjectModal() {
+            document.getElementById('projectModal').classList.add('active');
+        }
+
+        function closeProjectModal() {
+            document.getElementById('projectModal').classList.remove('active');
+            document.getElementById('projectNameInput').value = '';
+            document.getElementById('projectDescInput').value = '';
+            document.getElementById('projectDocsInput').value = '';
+        }
+
+        function openDocsModal() {
+            if (!activeProjectId) return alert('Bitte zuerst ein Projekt auswählen');
+            const projects = document.querySelector('.projects-list').innerHTML;
+            fetchProjects().then(projects => {
+                const project = projects.find(p => p.id === activeProjectId);
+                if (project) {
+                    document.getElementById('docsInput').value = project.docs;
+                    document.getElementById('docsModal').classList.add('active');
+                }
+            });
+        }
+
+        function closeDocsModal() {
+            document.getElementById('docsModal').classList.remove('active');
+            document.getElementById('docsInput').value = '';
+        }
+
+        async function saveDocs() {
+            const content = document.getElementById('docsInput').value;
+            
+            if (!activeProjectId) return alert('No project selected');
+
+            try {
+                await fetch(`/api/projects/${activeProjectId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ docs: content })
+                });
+                closeDocsModal();
+                selectProject(activeProjectId); // Refresh docs display
+            } catch (error) {
+                console.error('Error saving docs:', error);
+                alert('Fehler beim Speichern');
+            }
+        }
+
+        // Tab switching
+        function switchTab(tab) {
+            // Update nav items
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelector(`.nav-item[data-tab="${tab}"]`).classList.add('active');
+            
+            // Show/hide projects submenu
+            document.getElementById('projectsSubmenu').classList.toggle('visible', tab === 'projects');
+            
+            // Show/hide main content areas
+            const showMainContent = (tab === 'dashboard' || tab === 'projects');
+            document.querySelector('.main-content').style.display = showMainContent ? 'flex' : 'none';
+            document.getElementById('dashboardSection').style.display = tab === 'dashboard' ? 'block' : 'none';
+            document.getElementById('boardSection').style.display = tab === 'projects' ? 'block' : 'none';
+            document.getElementById('statusView').style.display = tab === 'status' ? 'flex' : 'none';
+            document.getElementById('contextView').style.display = tab === 'context' ? 'flex' : 'none';
+            
+            if (tab === 'dashboard') {
+                loadDashboard();
+            }
+            if (tab === 'status') {
+                loadActivityLog();
+            }
+            if (tab === 'context') {
+                loadContextFiles();
+            }
+        }
+        
+        // Dashboard Functions
+        async function loadDashboard() {
+            try {
+                // Load projects for stats
+                const projectsResponse = await fetch('/api/projects');
+                const projectsData = await projectsResponse.json();
+                const projects = projectsData.projects || [];
+                
+                // Calculate stats
+                let totalTasks = 0;
+                let doneTasks = 0;
+                projects.forEach(p => {
+                    if (p.tasks) {
+                        totalTasks += p.tasks.length;
+                        doneTasks += p.tasks.filter(t => t.status === 'done').length;
+                    }
+                });
+                
+                // Update stats
+                document.getElementById('dashboardProjectCount').textContent = projects.length;
+                document.getElementById('dashboardTaskCount').textContent = totalTasks;
+                document.getElementById('dashboardDoneCount').textContent = doneTasks;
+                
+                // Load activity
+                const activityResponse = await fetch('/api/activity');
+                if (activityResponse.ok) {
+                    const activityData = await activityResponse.json();
+                    const activityList = document.getElementById('dashboardActivityList');
+                    if (activityData.activities && activityData.activities.length > 0) {
+                        activityList.innerHTML = activityData.activities.reverse().slice(0, 10).map(activity => `
+                            <div class="activity-item">
+                                <div class="activity-time">${new Date(activity.timestamp).toLocaleString('de-DE')}</div>
+                                <div class="activity-title">${activity.title}</div>
+                                <div class="activity-desc">${activity.description}</div>
+                                <span class="activity-badge">${activity.status}</span>
+                            </div>
+                        `).join('');
+                    } else {
+                        activityList.innerHTML = '<div style="color: var(--text-secondary); padding: 1rem;">Keine Aktivitäten vorhanden</div>';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        // ==========================================
+        // Context Files Functions
+        // ==========================================
+        
+        let activeContextFile = null;
+        let contextPreviewMode = false;
+        let originalContextContent = '';
+
+        async function loadContextFiles() {
+            try {
+                const response = await fetch('/api/context-files');
+                const data = await response.json();
+                
+                const list = document.getElementById('contextFilesList');
+                list.innerHTML = data.files.map(file => `
+                    <div class="project-item ${activeContextFile === file.name ? 'active' : ''}" 
+                         data-file="${file.name}" 
+                         onclick="selectContextFile('${file.name}')"
+                         style="opacity: ${file.exists ? '1' : '0.5'};">
+                        <div class="project-id" style="font-size: 0.65rem;">${file.exists ? formatFileSize(file.size) : 'nicht vorhanden'}</div>
+                        <div class="project-name" style="font-size: 0.85rem;">${file.name}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.2rem;">${file.description}</div>
+                    </div>
+                `).join('');
+                
+                // Auto-select first file if none selected
+                if (!activeContextFile && data.files.length > 0) {
+                    selectContextFile(data.files[0].name);
+                }
+            } catch (error) {
+                console.error('Error loading context files:', error);
+            }
+        }
+
+        async function selectContextFile(filename) {
+            // Check for unsaved changes
+            if (activeContextFile && document.getElementById('contextEditor').value !== originalContextContent) {
+                if (!confirm('Ungespeicherte Änderungen verwerfen?')) {
+                    return;
+                }
+            }
+            
+            activeContextFile = filename;
+            contextPreviewMode = false;
+            document.getElementById('contextEditor').style.display = 'block';
+            document.getElementById('contextPreview').style.display = 'none';
+            document.getElementById('contextPreviewBtn').textContent = 'Vorschau';
+            
+            // Update active state in list
+            document.querySelectorAll('#contextFilesList .project-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.file === filename);
+            });
+            
+            try {
+                const response = await fetch(`/api/context-files/${encodeURIComponent(filename)}`);
+                const data = await response.json();
+                
+                document.getElementById('contextFileName').textContent = data.name;
+                document.getElementById('contextFileDesc').textContent = data.description;
+                document.getElementById('contextEditor').value = data.content;
+                originalContextContent = data.content;
+                
+                document.getElementById('contextSaveBtn').style.display = 'inline-block';
+                
+                if (data.modifiedAt) {
+                    document.getElementById('contextMeta').textContent = 
+                        `Zuletzt geändert: ${new Date(data.modifiedAt).toLocaleString('de-DE')} · ${formatFileSize(data.size)}`;
+                } else {
+                    document.getElementById('contextMeta').textContent = 'Neue Datei';
+                }
+            } catch (error) {
+                console.error('Error loading context file:', error);
+            }
+        }
+
+        function toggleContextPreview() {
+            contextPreviewMode = !contextPreviewMode;
+            const editor = document.getElementById('contextEditor');
+            const preview = document.getElementById('contextPreview');
+            const btn = document.getElementById('contextPreviewBtn');
+            
+            if (contextPreviewMode) {
+                preview.innerHTML = marked.parse(editor.value);
+                editor.style.display = 'none';
+                preview.style.display = 'block';
+                btn.textContent = 'Bearbeiten';
+            } else {
+                editor.style.display = 'block';
+                preview.style.display = 'none';
+                btn.textContent = 'Vorschau';
+            }
+        }
+
+        async function saveContextFile() {
+            if (!activeContextFile) return;
+            
+            const content = document.getElementById('contextEditor').value;
+            
+            try {
+                const response = await fetch(`/api/context-files/${encodeURIComponent(activeContextFile)}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    originalContextContent = content;
+                    document.getElementById('contextMeta').textContent = 
+                        `Gespeichert: ${new Date(data.modifiedAt).toLocaleString('de-DE')} · ${formatFileSize(data.size)}`;
+                    
+                    // Kurze visuelle Bestätigung
+                    const btn = document.getElementById('contextSaveBtn');
+                    btn.textContent = '✓ Gespeichert';
+                    btn.style.background = 'var(--success)';
+                    setTimeout(() => {
+                        btn.textContent = 'Speichern';
+                        btn.style.background = 'var(--accent)';
+                    }, 1500);
+                    
+                    loadContextFiles(); // Refresh list
+                } else {
+                    alert('Fehler beim Speichern');
+                }
+            } catch (error) {
+                console.error('Error saving context file:', error);
+                alert('Fehler beim Speichern');
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes) return '0 B';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        async function loadQueue() {
+            try {
+                const response = await fetch('/api/molt-status');
+                if (response.ok) {
+                    const data = await response.json();
+                    const queueList = document.getElementById('queueList');
+                    if (data.queue && data.queue.length > 0) {
+                        queueList.innerHTML = data.queue.map(item => `
+                            <div class="todo-item ${item.status}">
+                                <div style="font-weight: 500; margin-bottom: 0.2rem;">${item.completed ? '✅' : '⏳'} ${item.title}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">${item.description}</div>
+                            </div>
+                        `).join('');
+                    } else {
+                        queueList.innerHTML = '<p style="color: var(--text-secondary);">All done! Ready for new tasks.</p>';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading queue:', error);
+            }
+        }
+
+        async function loadActivityLog() {
+            try {
+                const response = await fetch('/api/activity');
+                if (response.ok) {
+                    const data = await response.json();
+                    const activityList = document.getElementById('activityList');
+                    if (data.activities && data.activities.length > 0) {
+                        activityList.innerHTML = data.activities.reverse().map(activity => `
+                            <div class="activity-item">
+                                <div class="activity-time">${new Date(activity.timestamp).toLocaleString('de-DE')}</div>
+                                <div class="activity-title">${activity.title}</div>
+                                <div class="activity-desc">${activity.description}</div>
+                                <span class="activity-badge">${activity.status}</span>
+                            </div>
+                        `).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading activities:', error);
+            }
+        }
+
+        // Task Modal Functions
+        let currentTaskId = null;
+        let isPreviewMode = false;
+
+        async function openTaskModal(taskId) {
+            currentTaskId = taskId;
+            isPreviewMode = false;
+            document.getElementById('taskContentInput').style.display = 'block';
+            document.getElementById('taskContentPreview').style.display = 'none';
+            document.getElementById('previewToggle').textContent = 'Vorschau';
+            
+            // Check if it's a feature file (starts with PROJ-)
+            if (taskId.startsWith('PROJ-')) {
+                try {
+                    const response = await fetch(`/api/projects/${activeProjectId}/features/${taskId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        document.getElementById('taskModalTitle').textContent = data.filename;
+                        document.getElementById('taskContentInput').value = data.content;
+                        document.getElementById('taskModal').classList.add('active');
+                    } else {
+                        alert('Feature-Datei konnte nicht geladen werden');
+                    }
+                } catch (error) {
+                    console.error('Error loading feature:', error);
+                    alert('Fehler beim Laden');
+                }
+            } else {
+                // Regular task - just show info
+                const projects = await fetchProjects();
+                const project = projects.find(p => p.id === activeProjectId);
+                const task = project?.tasks?.find(t => t.id === taskId);
+                if (task) {
+                    document.getElementById('taskModalTitle').textContent = task.title;
+                    document.getElementById('taskContentInput').value = task.description || '';
+                    document.getElementById('taskModal').classList.add('active');
+                }
+            }
+        }
+
+        function closeTaskModal() {
+            document.getElementById('taskModal').classList.remove('active');
+            currentTaskId = null;
+        }
+
+        function toggleTaskPreview() {
+            isPreviewMode = !isPreviewMode;
+            const input = document.getElementById('taskContentInput');
+            const preview = document.getElementById('taskContentPreview');
+            const toggle = document.getElementById('previewToggle');
+            
+            if (isPreviewMode) {
+                preview.innerHTML = marked.parse(input.value);
+                input.style.display = 'none';
+                preview.style.display = 'block';
+                toggle.textContent = 'Bearbeiten';
+            } else {
+                input.style.display = 'block';
+                preview.style.display = 'none';
+                toggle.textContent = 'Vorschau';
+            }
+        }
+
+        async function saveTaskContent() {
+            if (!currentTaskId) return;
+            
+            const content = document.getElementById('taskContentInput').value;
+            
+            if (currentTaskId.startsWith('PROJ-')) {
+                try {
+                    const response = await fetch(`/api/projects/${activeProjectId}/features/${currentTaskId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ content })
+                    });
+                    
+                    if (response.ok) {
+                        closeTaskModal();
+                        renderBoard();
+                    } else {
+                        alert('Fehler beim Speichern');
+                    }
+                } catch (error) {
+                    console.error('Error saving feature:', error);
+                    alert('Fehler beim Speichern');
+                }
+            } else {
+                // Update regular task description
+                try {
+                    await fetch(`/api/projects/${activeProjectId}/tasks/${currentTaskId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ description: content })
+                    });
+                    closeTaskModal();
+                    renderBoard();
+                } catch (error) {
+                    console.error('Error saving task:', error);
+                }
+            }
+        }
+
+        // Sync Features Function
+        async function syncFeatures() {
+            if (!activeProjectId) return;
+            
+            try {
+                const response = await fetch(`/api/projects/${activeProjectId}/sync-features`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.synced > 0) {
+                        alert(`${data.synced} Feature(s) synchronisiert!`);
+                    } else {
+                        alert('Alle Features bereits synchronisiert');
+                    }
+                    renderBoard();
+                }
+            } catch (error) {
+                console.error('Error syncing features:', error);
+            }
+        }
+
+        // Agent Status Polling
+        // Agent Status removed - not reliable
+
+        // ==========================================
+        // Project Sub-Tab Navigation
+        // ==========================================
+
+        let activeProjectTab = 'board';
+        let codeEditor = null;
+        let currentFilePath = null;
+        let originalFileContent = '';
+        let hasUnsavedChanges = false;
+
+        function switchProjectTab(tab) {
+            activeProjectTab = tab;
+            
+            // Update tab styles
+            document.querySelectorAll('.subnav-tab').forEach(t => {
+                t.classList.toggle('active', t.dataset.tab === tab);
+            });
+            
+            // Show/hide content
+            document.getElementById('board').style.display = tab === 'board' ? 'grid' : 'none';
+            document.getElementById('fileBrowserContainer').classList.toggle('active', tab === 'files');
+            document.getElementById('contextTabContainer').classList.toggle('active', tab === 'context');
+            
+            // Load file tree when switching to files tab
+            if (tab === 'files' && activeProjectId) {
+                loadFileTree();
+            }
+        }
+
+        // ==========================================
+        // File Browser Functions
+        // ==========================================
+
+        async function loadFileTree() {
+            if (!activeProjectId) return;
+            
+            const fileTree = document.getElementById('fileTree');
+            fileTree.innerHTML = '<div class="editor-empty"><div class="editor-empty-text">Lade Dateibaum...</div></div>';
+            
+            try {
+                const response = await fetch(`/api/projects/${activeProjectId}/files`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    if (data.needsPath) {
+                        fileTree.innerHTML = `
+                            <div class="no-path-message">
+                                <div class="icon">📂</div>
+                                <div class="title">Kein Projektpfad</div>
+                                <div class="desc">Bitte setze den Projektpfad in den Projekteinstellungen.</div>
+                                <button class="set-path-btn" onclick="promptProjectPath()">Pfad setzen</button>
+                            </div>
+                        `;
+                    } else {
+                        fileTree.innerHTML = `<div class="editor-empty"><div class="editor-empty-text">Fehler: ${data.error}</div></div>`;
+                    }
+                    return;
+                }
+                
+                fileTree.innerHTML = renderFileTree(data.tree, 0);
+            } catch (error) {
+                console.error('Error loading file tree:', error);
+                fileTree.innerHTML = '<div class="editor-empty"><div class="editor-empty-text">Fehler beim Laden</div></div>';
+            }
+        }
+
+        function renderFileTree(items, depth) {
+            if (!items || items.length === 0) {
+                return '<div class="editor-empty"><div class="editor-empty-text">Keine Dateien</div></div>';
+            }
+            
+            let html = '';
+            
+            for (const item of items) {
+                const indent = depth * 0.5;
+                
+                if (item.type === 'directory') {
+                    html += `
+                        <div class="file-tree-item directory" data-path="${item.path}" onclick="toggleFolder(this, event)" style="padding-left: ${0.6 + indent}rem;">
+                            <span class="chevron">▶</span>
+                            <span class="icon">${item.icon}</span>
+                            <span class="name">${item.name}</span>
+                        </div>
+                        <div class="file-tree-children" data-parent="${item.path}">
+                            ${renderFileTree(item.children, depth + 1)}
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="file-tree-item file" data-path="${item.path}" onclick="openFile('${item.path}')" style="padding-left: ${0.6 + indent + 1.2}rem;">
+                            <span class="icon">${item.icon}</span>
+                            <span class="name">${item.name}</span>
+                        </div>
+                    `;
+                }
+            }
+            
+            return html;
+        }
+
+        function toggleFolder(element, event) {
+            event.stopPropagation();
+            const path = element.dataset.path;
+            const children = document.querySelector(`.file-tree-children[data-parent="${path}"]`);
+            
+            if (children) {
+                element.classList.toggle('expanded');
+                children.classList.toggle('expanded');
+            }
+        }
+
+        async function openFile(filePath) {
+            // Check for unsaved changes
+            if (hasUnsavedChanges) {
+                if (!confirm('Ungespeicherte Änderungen verwerfen?')) {
+                    return;
+                }
+            }
+            
+            // Update active state in tree
+            document.querySelectorAll('.file-tree-item.file').forEach(item => {
+                item.classList.toggle('active', item.dataset.path === filePath);
+            });
+            
+            try {
+                const response = await fetch(`/api/projects/${activeProjectId}/files/${filePath}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    alert('Fehler: ' + data.error);
+                    return;
+                }
+                
+                currentFilePath = filePath;
+                originalFileContent = data.content;
+                hasUnsavedChanges = false;
+                
+                // Show editor header
+                document.getElementById('editorHeader').style.display = 'flex';
+                document.getElementById('editorEmpty').style.display = 'none';
+                
+                // Update header info
+                document.getElementById('editorFileIcon').textContent = data.icon;
+                document.getElementById('editorFileName').textContent = data.name;
+                document.getElementById('editorFilePath').textContent = filePath.replace(data.name, '');
+                
+                // Initialize or update CodeMirror
+                const editorContent = document.getElementById('editorContent');
+                const mode = getCodeMirrorMode(data.extension);
+                
+                if (!codeEditor) {
+                    // Create editor container if not exists
+                    let editorEl = document.getElementById('codeMirrorEditor');
+                    if (!editorEl) {
+                        editorEl = document.createElement('div');
+                        editorEl.id = 'codeMirrorEditor';
+                        editorEl.style.height = '100%';
+                        editorContent.appendChild(editorEl);
+                    }
+                    
+                    codeEditor = CodeMirror(editorEl, {
+                        value: data.content,
+                        mode: mode,
+                        theme: 'material-darker',
+                        lineNumbers: true,
+                        lineWrapping: true,
+                        tabSize: 2,
+                        indentWithTabs: false,
+                        autoCloseBrackets: true,
+                        matchBrackets: true
+                    });
+                    
+                    codeEditor.on('change', () => {
+                        const changed = codeEditor.getValue() !== originalFileContent;
+                        hasUnsavedChanges = changed;
+                        updateSaveButton();
+                    });
+                } else {
+                    codeEditor.setValue(data.content);
+                    codeEditor.setOption('mode', mode);
+                }
+                
+                updateSaveButton();
+                codeEditor.refresh();
+                
+            } catch (error) {
+                console.error('Error opening file:', error);
+                alert('Fehler beim Öffnen der Datei');
+            }
+        }
+
+        function getCodeMirrorMode(extension) {
+            const modes = {
+                '.js': 'javascript',
+                '.jsx': 'jsx',
+                '.ts': 'javascript',
+                '.tsx': 'jsx',
+                '.json': { name: 'javascript', json: true },
+                '.css': 'css',
+                '.scss': 'css',
+                '.html': 'htmlmixed',
+                '.md': 'markdown',
+                '.py': 'python',
+                '.yml': 'yaml',
+                '.yaml': 'yaml',
+                '.sql': 'sql',
+                '.sh': 'shell'
+            };
+            return modes[extension] || 'javascript';
+        }
+
+        function updateSaveButton() {
+            const btn = document.getElementById('editorSaveBtn');
+            btn.disabled = !hasUnsavedChanges;
+            btn.textContent = hasUnsavedChanges ? 'Speichern' : 'Gespeichert';
+            btn.classList.toggle('saved', !hasUnsavedChanges);
+        }
+
+        async function saveCurrentFile() {
+            if (!currentFilePath || !codeEditor) return;
+            
+            const content = codeEditor.getValue();
+            const btn = document.getElementById('editorSaveBtn');
+            
+            btn.textContent = 'Speichern...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch(`/api/projects/${activeProjectId}/files/${currentFilePath}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    originalFileContent = content;
+                    hasUnsavedChanges = false;
+                    btn.textContent = '✓ Gespeichert';
+                    btn.classList.add('saved');
+                    
+                    setTimeout(() => {
+                        updateSaveButton();
+                    }, 1500);
+                } else {
+                    alert('Fehler: ' + data.error);
+                    btn.textContent = 'Speichern';
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error saving file:', error);
+                alert('Fehler beim Speichern');
+                btn.textContent = 'Speichern';
+                btn.disabled = false;
+            }
+        }
+
+        async function promptProjectPath() {
+            const projects = await fetchProjects();
+            const project = projects.find(p => p.id === activeProjectId);
+            
+            const currentPath = project?.projectPath || '';
+            const newPath = prompt('Projektpfad eingeben:', currentPath);
+            
+            if (newPath && newPath.trim()) {
+                try {
+                    await fetch(`/api/projects/${activeProjectId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ projectPath: newPath.trim() })
+                    });
+                    loadFileTree();
+                } catch (error) {
+                    console.error('Error setting path:', error);
+                    alert('Fehler beim Setzen des Pfads');
+                }
+            }
+        }
+
+        // Keyboard shortcut for save
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                if (activeProjectTab === 'files' && hasUnsavedChanges) {
+                    e.preventDefault();
+                    saveCurrentFile();
+                }
+            }
+        });
+
+        // Initialize
+        renderProjectsList();
+        switchTab('dashboard'); // Set initial state - Dashboard als Startseite
+        setInterval(renderProjectsList, 5000);
+    </script>
 </body>
 </html>

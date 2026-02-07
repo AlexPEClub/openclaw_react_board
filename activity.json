@@ -1,0 +1,89 @@
+{
+  "activities": [
+    {
+      "id": "1",
+      "timestamp": "2026-01-31T16:50:00Z",
+      "type": "setup",
+      "title": "Kanban Board Setup",
+      "description": "Created GitHub-style dark mode UI",
+      "status": "completed"
+    },
+    {
+      "id": "2",
+      "timestamp": "2026-01-31T16:52:00Z",
+      "type": "feature",
+      "title": "Multi-Project Support",
+      "description": "Added project management with sidebar navigation",
+      "status": "completed"
+    },
+    {
+      "id": "3",
+      "timestamp": "2026-01-31T16:53:00Z",
+      "type": "feature",
+      "title": "Markdown Documentation",
+      "description": "Implemented context editor for project docs",
+      "status": "completed"
+    },
+    {
+      "id": "4",
+      "timestamp": "2026-01-31T16:55:00Z",
+      "type": "feature",
+      "title": "Review Column",
+      "description": "Added 👀 Review status column to Kanban",
+      "status": "completed"
+    },
+    {
+      "id": "5",
+      "timestamp": "2026-01-31T16:57:00Z",
+      "type": "feature",
+      "title": "Status Indicator",
+      "description": "Added availability status (Available/Busy)",
+      "status": "completed"
+    },
+    {
+      "id": "1769945788279",
+      "timestamp": "2026-02-01T11:36:28.279Z",
+      "type": "feature",
+      "title": "Activity Log Redesign",
+      "description": "Queue entfernt, Development Log als Hauptansicht, POST-Endpoint für automatisches Logging hinzugefügt",
+      "status": "completed",
+      "project": null
+    },
+    {
+      "id": "1769945922903",
+      "timestamp": "2026-02-01T11:38:42.903Z",
+      "type": "fix",
+      "title": "Status View UI Fix",
+      "description": "Context-Sidebar in Status-Ansicht ausgeblendet, Queue aus Sidebar entfernt, Projekte auch im Status-Tab sichtbar, Development Log zentriert",
+      "status": "completed",
+      "project": null
+    },
+    {
+      "id": "1769946112787",
+      "timestamp": "2026-02-01T11:41:52.787Z",
+      "type": "feature",
+      "title": "Sidebar Navigation Redesign",
+      "description": "Projects und Status als vertikale Menüpunkte, Projekte als eingerücktes Submenu unter Projects",
+      "status": "completed",
+      "project": null
+    },
+    {
+      "id": "1769946296680",
+      "timestamp": "2026-02-01T11:44:56.680Z",
+      "type": "feature",
+      "title": "Agent Status Indikator + Deutsche UI",
+      "description": "Echtzeit-Statusanzeige (Verfügbar/Arbeitet) in Sidebar, komplette Oberfläche auf Deutsch übersetzt",
+      "status": "completed",
+      "project": null
+    },
+    {
+      "id": "1769946634154",
+      "timestamp": "2026-02-01T11:50:34.154Z",
+      "type": "feature",
+      "title": "Feature-Sync & Task-Details",
+      "description": "Sync-Funktion für Feature-Files implementiert, Task-Detail-Modal mit Markdown-Editor und Vorschau, direktes Bearbeiten der Feature-Dateien möglich",
+      "status": "completed",
+      "project": "Minimalisische Journaling App"
+    }
+  ]
+}

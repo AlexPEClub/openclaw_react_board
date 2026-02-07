@@ -1,0 +1,16 @@
+{
+  "activities": [
+    {
+      "id": "act-001",
+      "timestamp": "2026-02-07T10:00:00.000Z",
+      "action": "project_created",
+      "title": "Projekt erstellt",
+      "description": "Beispiel Projekt wurde erstellt",
+      "metadata": {
+        "projectId": "proj-example-001",
+        "projectName": "Beispiel Projekt"
+      },
+      "status": "completed"
+    }
+  ]
+}

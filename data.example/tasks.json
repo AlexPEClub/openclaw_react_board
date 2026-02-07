@@ -1,0 +1,43 @@
+{
+  "projects": [
+    {
+      "id": "proj-example-001",
+      "name": "Beispiel Projekt",
+      "description": "Ein Beispielprojekt zum Kennenlernen des Kanban Boards",
+      "docs": "# Beispiel Projekt\n\nDies ist ein Beispielprojekt. Du kannst es löschen und deine eigenen Projekte erstellen.\n\n## Features\n- Kanban Board\n- File Browser\n- Activity Log",
+      "color": "#58a6ff",
+      "projectPath": "/path/to/project",
+      "tasks": [
+        {
+          "id": "task-001",
+          "title": "Erste Aufgabe",
+          "description": "Dies ist eine Beispiel-Aufgabe im Todo-Status",
+          "status": "todo",
+          "priority": "medium",
+          "date": "2026-02-07",
+          "createdAt": "2026-02-07T10:00:00.000Z"
+        },
+        {
+          "id": "task-002",
+          "title": "Aufgabe in Arbeit",
+          "description": "Diese Aufgabe ist gerade in Bearbeitung",
+          "status": "in-progress",
+          "priority": "high",
+          "date": "2026-02-07",
+          "createdAt": "2026-02-07T10:00:00.000Z"
+        },
+        {
+          "id": "PROJ-1",
+          "title": "User Authentication Feature",
+          "description": "Feature Spec für User Login/Logout",
+          "status": "review",
+          "priority": "high",
+          "featureFile": "PROJ-1-user-authentication.md",
+          "date": "2026-02-07",
+          "createdAt": "2026-02-07T10:00:00.000Z"
+        }
+      ],
+      "createdAt": "2026-02-07T10:00:00.000Z"
+    }
+  ]
+}
