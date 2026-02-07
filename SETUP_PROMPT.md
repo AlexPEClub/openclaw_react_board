@@ -53,14 +53,19 @@ Diesen Block sollte der Agent in seine MEMORY.md einfügen (kuratierte Langzeit-
 
     ### Wichtige Pfade:
     - **Board-Daten**: ~/.openclaw/workspace/kanban/tasks.json
-    - **Specs**: {projekt}/specs/PROJ-{nr}-{feature}.md
+    - **Feature-Files**: {projekt}/features/PROJ-{nr}-{feature}.md
 
     ### Bei Projekt-Anlage IMMER:
     - `projectPath` als absoluten Pfad setzen!
 
+    ### Feature-Files anlegen:
+    - Feature-Dateien gehören in den `features/`-Ordner des Projekts (NICHT `specs/`)
+    - Erst die Datei in `features/` erstellen, dann im Task per `featureFile` verknüpfen
+    - Namenskonvention: PROJ-{nr}-{feature-name}.md
+
     ### Workflow:
-    1. Neues Projekt → Ordner anlegen, dann im Board mit richtigem `projectPath`
-    2. Feature-Specs → In `specs/` ablegen, mit `featureFile` verknüpfen
+    1. Neues Projekt → Ordner anlegen (inkl. `features/`), dann im Board mit richtigem `projectPath`
+    2. Feature-Files → In `features/` ablegen, mit `featureFile` im Task verknüpfen
     3. Status Updates → API: `PUT /api/tasks/{id} {"status": "in-progress"}`
     4. Context-Dateien → Werden aus OPENCLAW_WORKSPACE geladen
 

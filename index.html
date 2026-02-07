@@ -1819,8 +1819,12 @@
             document.getElementById('taskContentPreview').style.display = 'none';
             document.getElementById('previewToggle').textContent = 'Vorschau';
             
-            // Check if it's a feature file (starts with PROJ-)
-            if (taskId.startsWith('PROJ-')) {
+            const projects = await fetchProjects();
+            const project = projects.find(p => p.id === activeProjectId);
+            const task = project?.tasks?.find(t => t.id === taskId);
+
+            // Only load feature file if the task has one defined
+            if (task?.featureFile) {
                 try {
                     const response = await fetch(`/api/projects/${activeProjectId}/features/${taskId}`);
                     if (response.ok) {
@@ -1835,16 +1839,11 @@
                     console.error('Error loading feature:', error);
                     alert('Fehler beim Laden');
                 }
-            } else {
-                // Regular task - just show info
-                const projects = await fetchProjects();
-                const project = projects.find(p => p.id === activeProjectId);
-                const task = project?.tasks?.find(t => t.id === taskId);
-                if (task) {
-                    document.getElementById('taskModalTitle').textContent = task.title;
-                    document.getElementById('taskContentInput').value = task.description || '';
-                    document.getElementById('taskModal').classList.add('active');
-                }
+            } else if (task) {
+                // Regular task or task without feature file - just show info
+                document.getElementById('taskModalTitle').textContent = task.title;
+                document.getElementById('taskContentInput').value = task.description || '';
+                document.getElementById('taskModal').classList.add('active');
             }
         }
 

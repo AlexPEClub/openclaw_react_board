@@ -88,7 +88,7 @@ OPENCLAW_WORKSPACE=/custom/path PORT=3000 node app.js
 ├── kanban/                  # Das Kanban Board
 ├── projects/                # Deine Projekte (optional)
 │   ├── mein-projekt/
-│   │   ├── specs/           # Feature Specifications
+│   │   ├── features/           # Feature Specifications
 │   │   ├── docs/            # Dokumentation
 │   │   └── src/             # Source Code
 │   └── anderes-projekt/
@@ -131,10 +131,10 @@ OPENCLAW_WORKSPACE=/custom/path PORT=3000 node app.js
 
 ### Feature-Specs verknüpfen
 
-Feature-Spezifikationen im `specs/`-Ordner des Projekts ablegen und per `featureFile` im Task verknüpfen:
+Feature-Spezifikationen im `features/`-Ordner des Projekts ablegen und per `featureFile` im Task verknüpfen:
 
 ```
-/projects/mein-projekt/specs/PROJ-1-user-auth.md
+/projects/mein-projekt/features/PROJ-1-user-auth.md
 ```
 
 Namenskonvention: `PROJ-{nummer}-{feature-name}.md`
