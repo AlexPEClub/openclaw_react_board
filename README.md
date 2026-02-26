@@ -26,6 +26,8 @@ npm start
 
 Das Board läuft dann auf: http://localhost:3000
 
+> Hinweis: `npm start` nutzt `app.js` als produktiven Server-Einstiegspunkt.
+
 ### Clawdbot/openclaw Agent Installation
 
 Gib deinem Agent diesen Prompt:
@@ -143,20 +145,28 @@ Namenskonvention: `PROJ-{nummer}-{feature-name}.md`
 
 ```bash
 # Projekte
-GET    /api/projects              # Alle Projekte abrufen
-POST   /api/projects              # Neues Projekt erstellen
-GET    /api/projects/:id          # Einzelnes Projekt
+GET    /api/projects                               # Alle Projekte abrufen
+POST   /api/projects                               # Neues Projekt erstellen
+GET    /api/projects/:id                           # Einzelnes Projekt
+PUT    /api/projects/:id                           # Projekt aktualisieren
+DELETE /api/projects/:id                           # Projekt löschen
 
 # Tasks
-POST   /api/projects/:id/tasks    # Task hinzufügen
-PUT    /api/tasks/:id             # Task aktualisieren (z.B. Status ändern)
+POST   /api/projects/:projectId/tasks              # Task hinzufügen
+PUT    /api/projects/:projectId/tasks/:taskId      # Task aktualisieren (z.B. Status)
+DELETE /api/projects/:projectId/tasks/:taskId      # Task löschen
 
 # Context & Files
-GET    /api/context-files         # Context-Dateien auflisten
-GET    /api/files/:projectId/*    # File Browser API
+GET    /api/context-files                          # Context-Dateien auflisten
+GET    /api/context-files/:filename                # Einzelne Context-Datei lesen
+PUT    /api/context-files/:filename                # Context-Datei speichern
+GET    /api/projects/:id/files                     # File-Tree für Projekt
+GET    /api/projects/:id/files/*                   # Einzelne Datei lesen
+PUT    /api/projects/:id/files/*                   # Einzelne Datei speichern
 
-# Activity
-GET    /api/activity              # Activity Log
+# Activity / Status
+GET    /api/activity                               # Activity Log
+GET    /api/agent-status                           # Agent-Status
 ```
 
 ### Beispiele
@@ -171,20 +181,22 @@ curl -X POST http://localhost:3000/api/projects \
     "projectPath": "/home/node/clawd/projects/mein-projekt"
   }'
 
-# Task Status ändern
-curl -X PUT http://localhost:3000/api/tasks/PROJ-1 \
-  -H "Content-Type: application/json" \
-  -d '{"status": "in-progress"}'
-
-# Task mit Feature-File erstellen
-curl -X POST http://localhost:3000/api/projects/{projectId}/tasks \
+# Task erstellen
+curl -X POST http://localhost:3000/api/projects/proj-12345678/tasks \
   -H "Content-Type: application/json" \
   -d '{
     "title": "User Authentication",
-    "featureFile": "PROJ-1-user-auth.md",
     "status": "todo",
     "priority": "high"
   }'
+
+# Task Status ändern
+curl -X PUT http://localhost:3000/api/projects/proj-12345678/tasks/task-abcdef12 \
+  -H "Content-Type: application/json" \
+  -d '{"status": "in-progress"}'
+
+# File-Tree abrufen
+curl http://localhost:3000/api/projects/proj-12345678/files
 ```
 
 ## Troubleshooting
