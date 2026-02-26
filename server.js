@@ -1,3 +1,4 @@
+// Legacy server prototype. Production entrypoint is app.js via `npm start`.
 import express from 'express'
 import cors from 'cors'
 import fs from 'fs'
