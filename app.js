@@ -63,6 +63,21 @@ app.put('/api/projects/:id', (req, res) => {
     const { id } = req.params;
     const updates = req.body;
 
+    if (!updates || typeof updates !== 'object' || Array.isArray(updates)) {
+        return res.status(400).json({ error: 'Invalid request body' });
+    }
+
+    const allowedFields = ['name', 'description', 'docs', 'color', 'projectPath'];
+    const unknownFields = Object.keys(updates).filter(key => !allowedFields.includes(key));
+
+    if (unknownFields.length > 0) {
+        return res.status(400).json({
+            error: 'Unsupported project field(s)',
+            unsupported: unknownFields,
+            allowed: allowedFields
+        });
+    }
+
     const data = readData();
     const projectIndex = data.projects.findIndex(p => p.id === id);
 
@@ -70,7 +85,11 @@ app.put('/api/projects/:id', (req, res) => {
         return res.status(404).json({ error: 'Project not found' });
     }
 
-    data.projects[projectIndex] = { ...data.projects[projectIndex], ...updates };
+    const safeUpdates = Object.fromEntries(
+        Object.entries(updates).filter(([key]) => allowedFields.includes(key))
+    );
+
+    data.projects[projectIndex] = { ...data.projects[projectIndex], ...safeUpdates };
     writeData(data);
 
     res.json(data.projects[projectIndex]);
