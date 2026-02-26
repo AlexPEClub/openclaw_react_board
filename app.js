@@ -26,6 +26,85 @@ function writeData(data) {
     fs.writeFileSync(dataFile, JSON.stringify(data, null, 2), 'utf8');
 }
 
+const HEX_COLOR_REGEX = /^#[0-9a-fA-F]{6}$/;
+const WRITE_WINDOW_MS = 60 * 1000;
+const MAX_WRITES_PER_WINDOW = 120;
+const writeRequests = new Map();
+
+function validateProjectInput(input, { partial = false } = {}) {
+    const errors = [];
+
+    if (!input || typeof input !== 'object' || Array.isArray(input)) {
+        return ['Invalid request body'];
+    }
+
+    if (!partial || Object.prototype.hasOwnProperty.call(input, 'name')) {
+        if (typeof input.name !== 'string' || input.name.trim().length < 2 || input.name.trim().length > 120) {
+            errors.push('name must be a string (2-120 chars)');
+        }
+    }
+
+    if (Object.prototype.hasOwnProperty.call(input, 'description')) {
+        if (typeof input.description !== 'string' || input.description.length > 4000) {
+            errors.push('description must be a string (max 4000 chars)');
+        }
+    }
+
+    if (Object.prototype.hasOwnProperty.call(input, 'docs')) {
+        if (typeof input.docs !== 'string' || input.docs.length > 100000) {
+            errors.push('docs must be a string (max 100000 chars)');
+        }
+    }
+
+    if (Object.prototype.hasOwnProperty.call(input, 'color')) {
+        if (typeof input.color !== 'string' || !HEX_COLOR_REGEX.test(input.color)) {
+            errors.push('color must be a valid hex color (#RRGGBB)');
+        }
+    }
+
+    if (Object.prototype.hasOwnProperty.call(input, 'projectPath')) {
+        if (typeof input.projectPath !== 'string' || input.projectPath.trim().length === 0 || input.projectPath.length > 1024) {
+            errors.push('projectPath must be a non-empty string (max 1024 chars)');
+        }
+    }
+
+    return errors;
+}
+
+function writeRateLimit(req, res, next) {
+    if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) return next();
+    if (!req.path.startsWith('/api/')) return next();
+
+    const now = Date.now();
+    const key = req.ip || req.socket?.remoteAddress || 'unknown';
+    const entry = writeRequests.get(key) || { count: 0, resetAt: now + WRITE_WINDOW_MS };
+
+    if (now > entry.resetAt) {
+        entry.count = 0;
+        entry.resetAt = now + WRITE_WINDOW_MS;
+    }
+
+    entry.count += 1;
+    writeRequests.set(key, entry);
+
+    if (entry.count > MAX_WRITES_PER_WINDOW) {
+        const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
+        res.set('Retry-After', String(retryAfter));
+        return res.status(429).json({ error: 'Too many write requests. Please retry shortly.' });
+    }
+
+    next();
+}
+
+setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of writeRequests.entries()) {
+        if (now > entry.resetAt) writeRequests.delete(key);
+    }
+}, WRITE_WINDOW_MS).unref();
+
+app.use(writeRateLimit);
+
 // GET all projects
 app.get('/api/projects', (req, res) => {
     const data = readData();
@@ -34,27 +113,35 @@ app.get('/api/projects', (req, res) => {
 
 // POST new project
 app.post('/api/projects', (req, res) => {
-    const { name, description, docs } = req.body;
+    const { name, description, docs, color, projectPath } = req.body || {};
 
-    if (!name) {
-        return res.status(400).json({ error: 'Project name required' });
+    const inputErrors = validateProjectInput({ name, description, docs, color, projectPath }, { partial: false });
+    if (inputErrors.length > 0) {
+        return res.status(400).json({ error: 'Validation failed', details: inputErrors });
     }
+
+    const normalizedName = name.trim();
+    const normalizedPath = typeof projectPath === 'string' ? projectPath.trim() : undefined;
 
     const data = readData();
     const newProject = {
         id: `proj-${uuidv4().slice(0, 8)}`,
-        name,
+        name: normalizedName,
         description: description || '',
-        docs: docs || '# ' + name,
-        color: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+        docs: docs || '# ' + normalizedName,
+        color: color || `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`,
         tasks: [],
         createdAt: new Date().toISOString()
     };
 
+    if (normalizedPath) {
+        newProject.projectPath = normalizedPath;
+    }
+
     data.projects.push(newProject);
     writeData(data);
 
-    console.log(`[PROJECT] Created: "${name}" (${newProject.id})`);
+    console.log(`[PROJECT] Created: "${normalizedName}" (${newProject.id})`);
     res.status(201).json(newProject);
 });
 
@@ -63,6 +150,26 @@ app.put('/api/projects/:id', (req, res) => {
     const { id } = req.params;
     const updates = req.body;
 
+    if (!updates || typeof updates !== 'object' || Array.isArray(updates)) {
+        return res.status(400).json({ error: 'Invalid request body' });
+    }
+
+    const allowedFields = ['name', 'description', 'docs', 'color', 'projectPath'];
+    const unknownFields = Object.keys(updates).filter(key => !allowedFields.includes(key));
+
+    if (unknownFields.length > 0) {
+        return res.status(400).json({
+            error: 'Unsupported project field(s)',
+            unsupported: unknownFields,
+            allowed: allowedFields
+        });
+    }
+
+    const inputErrors = validateProjectInput(updates, { partial: true });
+    if (inputErrors.length > 0) {
+        return res.status(400).json({ error: 'Validation failed', details: inputErrors });
+    }
+
     const data = readData();
     const projectIndex = data.projects.findIndex(p => p.id === id);
 
@@ -70,10 +177,26 @@ app.put('/api/projects/:id', (req, res) => {
         return res.status(404).json({ error: 'Project not found' });
     }
 
-    data.projects[projectIndex] = { ...data.projects[projectIndex], ...updates };
+    const safeUpdates = Object.fromEntries(
+        Object.entries(updates)
+            .filter(([key]) => allowedFields.includes(key))
+            .map(([key, value]) => {
+                if ((key === 'name' || key === 'projectPath') && typeof value === 'string') {
+                    return [key, value.trim()];
+                }
+                return [key, value];
+            })
+    );
+
+    data.projects[projectIndex] = { ...data.projects[projectIndex], ...safeUpdates };
     writeData(data);
 
-    res.json(data.projects[projectIndex]);
+    const responsePayload = { ...data.projects[projectIndex] };
+    if (safeUpdates.projectPath && !fs.existsSync(safeUpdates.projectPath)) {
+        responsePayload.warnings = ['projectPath does not exist on server filesystem'];
+    }
+
+    res.json(responsePayload);
 });
 
 // DELETE project
@@ -821,8 +944,12 @@ app.put('/api/projects/:id/files/*', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, HOST, () => {
-    console.log(`\n🦞 OpenClaw Board v2\n`);
-    console.log(`   🌐 http://0.0.0.0:${PORT}`);
-    console.log(`   📡 API: http://localhost:${PORT}/api/projects\n`);
-});
+if (require.main === module) {
+    app.listen(PORT, HOST, () => {
+        console.log(`\n🦞 OpenClaw Board v2\n`);
+        console.log(`   🌐 http://0.0.0.0:${PORT}`);
+        console.log(`   📡 API: http://localhost:${PORT}/api/projects\n`);
+    });
+}
+
+module.exports = app;
